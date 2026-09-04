@@ -39,6 +39,8 @@ class Builder:
     def sphere(self, segments, rings, scale, location, cell):
         m = Matrix.Translation(Vector(location)) @ Matrix.Diagonal((*scale, 1.0))
         r = bmesh.ops.create_uvsphere(self.bm, u_segments=segments, v_segments=rings, radius=1.0, matrix=m)
+        # В отличие от create_cone/create_cube/lathe, create_uvsphere сваривает полюса
+        # и отдаёт грани в порядке адресов — своём у каждого процесса.
         self._reorder_faces(r["verts"])
         return self._finish_part(r["verts"], cell)
 
@@ -176,22 +178,30 @@ class Builder:
         внутренних хеш-таблиц по указателям: он меняется от процесса к процессу,
         и при одинаковой геометрии .glb получался с разным порядком индексов.
         Здесь фиксируются порядок граней и стартовая вершина каждой; обход цикла
-        сохраняется, поэтому нормали не меняются. Материал и UV переносятся —
-        `paint` кладёт одну ячейку палитры на все петли грани.
+        сохраняется, поэтому нормали не меняются. UV переносятся поугловно и
+        поворачиваются вместе с циклом: `bmesh.ops.bevel` интерполирует данные
+        петель, и у фаски между двумя по-разному покрашенными гранями углы несут
+        разные ячейки палитры — одну на всю грань брать нельзя.
         """
         vs = set(verts)
         faces = [f for f in self.bm.faces if all(v in vs for v in f.verts)]
         saved = []
         for f in faces:
             loop = list(f.verts)
+            uvs = [tuple(lo[self.uv].uv) for lo in f.loops]
             start = min(range(len(loop)), key=lambda i: _vert_key(loop[i]))
-            saved.append((loop[start:] + loop[:start], f.material_index,
-                          tuple(f.loops[0][self.uv].uv)))
+            loop = loop[start:] + loop[:start]
+            saved.append((tuple(_vert_key(v) for v in loop), loop,
+                          uvs[start:] + uvs[:start], f.material_index))
+        # Ключ обязан быть уникальным: у совпавших ключей порядок решает стабильность
+        # sorted, то есть исходный — недетерминированный — порядок граней.
+        if len({s[0] for s in saved}) != len(saved):
+            raise SystemExit("DUPLICATE_FACE_KEY: совпадающие грани, порядок недетерминирован")
         bmesh.ops.delete(self.bm, geom=faces, context="FACES_ONLY")
-        for loop, index, uv in sorted(saved, key=lambda s: [_vert_key(v) for v in s[0]]):
+        for _, loop, uvs, index in sorted(saved, key=lambda s: s[0]):
             f = self.bm.faces.new(loop)
             f.material_index = index
-            for lo in f.loops:
+            for lo, uv in zip(f.loops, uvs):
                 lo[self.uv].uv = uv
         self.bm.normal_update()
 

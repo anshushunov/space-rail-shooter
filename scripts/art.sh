@@ -18,12 +18,13 @@ case "$cmd" in
   asteroid)     blender_run "$ROOT/art/blender/scripts/asteroid.py" ;;
   drone)        blender_run "$ROOT/art/blender/scripts/enemy_drone.py" ;;
   shooter)      blender_run "$ROOT/art/blender/scripts/enemy_shooter.py" ;;
-  models)       for m in ship asteroid drone shooter; do "$0" "$m"; done ;;
+  models)       for m in ship asteroid drone shooter; do "$ROOT/scripts/art.sh" "$m"; done ;;
   export)       blender_run "$ROOT/art/export.py" ;;
   check)        blender_run "$ROOT/art/check_models.py" ;;
   import)       "$GODOT" --headless --path "$ROOT/game" --import ;;
   shot)         "$GODOT" --path "$ROOT/game" -s res://tools/screenshot.gd -- "${1:-2.5}" "${2:-res://../docs/playtests/shot.png}" ;;
   *)
     echo "usage: scripts/art.sh {test|make-palette|ship|asteroid|drone|shooter|models|export|check|import|shot [sec] [res://out.png]}" >&2
+    echo "       пересборка модели поверх существующего .blend: ART_OVERWRITE=1 scripts/art.sh <модель>" >&2
     exit 2 ;;
 esac

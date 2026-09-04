@@ -28,9 +28,9 @@ class EvaluateTests(unittest.TestCase):
                 self.assertIn("треугольников", problems[0])
 
     def test_each_axis_just_outside_range_fails(self):
-        eps = 0.01
         for i, axis in enumerate("xyz"):
             lo, hi = LIM[axis]
+            eps = (hi - lo) / 100
             for bad in (lo - eps, hi + eps):
                 with self.subTest(axis=axis, value=bad):
                     dims = list(OK_DIMS)

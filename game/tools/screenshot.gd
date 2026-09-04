@@ -14,6 +14,9 @@ func _init() -> void:
 		out = args[1]
 	var main: Node = load("res://scenes/Main.tscn").instantiate()
 	root.add_child(main)
+	# Сцену подняли руками, минуя автозагрузку: без этого get_tree().current_scene == null
+	# и код, который ищет корень сцены (EnemyShooter.Fire), падает.
+	current_scene = main
 	await create_timer(delay).timeout
 	var img := root.get_viewport().get_texture().get_image()
 	var err := img.save_png(out)
