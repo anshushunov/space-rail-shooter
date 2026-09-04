@@ -27,6 +27,11 @@ scripts/art.sh test           # unittest палитры (обычный Python)
 scripts/art.sh make-palette   # art/blender/palette.png + копия в game/assets/textures
 scripts/art.sh ship           # строит корабль: ship.blend, ship.glb, превью
 ART_OVERWRITE=1 scripts/art.sh ship   # пересборка с нуля перезаписывает ship.blend; после ручных правок использовать export
+scripts/art.sh asteroid       # три астероида
+scripts/art.sh drone          # дрон
+scripts/art.sh shooter        # стрелок
+scripts/art.sh models         # все модели подряд (нужен ART_OVERWRITE=1 для пересборки)
+ART_OVERWRITE=1 scripts/art.sh models   # пересборка всех .blend с нуля
 scripts/art.sh export         # переэкспорт всех .blend после ручных правок
 scripts/art.sh check          # лимиты полигонажа и габаритов .glb, код 1 при нарушении
 scripts/art.sh import         # Godot --import, чтобы ModelSlot увидел новые .glb
@@ -43,3 +48,4 @@ scripts/art.sh shot 2.5 res://../docs/playtests/shot.png   # скриншот и
 - Нос модели по +Y в Blender (экспортёр glTF даёт −Z в Godot). Проверять скриншотом, не арифметикой: `.tscn` пишет строки базиса.
 - После любого нового .glb обязателен `scripts/art.sh import`, иначе `ResourceLoader.Exists` не видит файл и остаётся заглушка.
 - Модели красятся UV в центры ячеек палитры; материалы `palette` и `palette_emit`, других не заводить.
+- Скрипт модели содержит только build(b); обвязка в lib/pipeline.py.

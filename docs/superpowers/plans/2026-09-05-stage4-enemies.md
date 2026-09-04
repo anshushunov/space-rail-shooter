@@ -293,7 +293,7 @@ DARK_SHARE = 0.15     # доля тёмных пятен
 def make_build(seed: int):
     def build(b):
         rng = random.Random(seed)
-        shell = bmesh.ops.create_icosphere(b.bm, subdivisions=2, radius=1.0)
+        shell = bmesh.ops.create_icosphere(b.bm, subdivisions=3, radius=1.0)  # в Blender 5.2: 1/2/3 → 20/80/320 треугольников
         verts = shell["verts"]
         offset = Vector((rng.uniform(-40.0, 40.0) for _ in range(3)))
         for v in verts:
@@ -638,7 +638,8 @@ git commit -m "feat(art): враг-стрелок по концепту, оба 
 ```markdown
 - Враги строятся носом по +Y, как всё; разворот к игроку делает сцена
   (`Model` повёрнут на 180° в `EnemyDrone.tscn`/`EnemyShooter.tscn`).
-- Астероиды: икосфера subdiv 2 + шум, три варианта `asteroid_a/b/c`, выбор в
+- Астероиды: икосфера subdivisions=3 (в Blender 5.2: 1/2/3 → 20/80/320
+  треугольников) + шум, три варианта `asteroid_a/b/c`, выбор в
   игре случайный через `ModelSlot.ModelPaths`.
 ```
 В раздел «Цвет» добавить:
