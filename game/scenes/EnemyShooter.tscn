@@ -1,6 +1,7 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/EnemyShooter.cs" id="1_shooter"]
+[ext_resource type="Script" path="res://scripts/ModelSlot.cs" id="9_slot"]
 [ext_resource type="PackedScene" path="res://scenes/EnemyBullet.tscn" id="2_ebullet"]
 
 [sub_resource type="PrismMesh" id="PrismMesh_shooter"]
@@ -20,7 +21,11 @@ Hp = 3
 ScoreValue = 60
 BulletScene = ExtResource("2_ebullet")
 
-[node name="Placeholder" type="MeshInstance3D" parent="."]
+[node name="Model" type="Node3D" parent="."]
+script = ExtResource("9_slot")
+ModelPath = "res://assets/models/enemy_shooter.glb"
+
+[node name="Placeholder" type="MeshInstance3D" parent="Model"]
 mesh = SubResource("PrismMesh_shooter")
 surface_material_override/0 = SubResource("Mat_shooter")
 

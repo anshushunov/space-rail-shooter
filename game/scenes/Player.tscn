@@ -1,7 +1,8 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/Player.cs" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/PlayerBullet.tscn" id="2_bullet"]
+[ext_resource type="Script" path="res://scripts/ModelSlot.cs" id="3_slot"]
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_ship"]
 radius = 0.6
@@ -21,6 +22,8 @@ script = ExtResource("1_player")
 BulletScene = ExtResource("2_bullet")
 
 [node name="Model" type="Node3D" parent="."]
+script = ExtResource("3_slot")
+ModelPath = "res://assets/models/ship.glb"
 
 [node name="Placeholder" type="MeshInstance3D" parent="Model"]
 transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0, 0)

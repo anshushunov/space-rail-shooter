@@ -1,6 +1,7 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/EnemyDrone.cs" id="1_drone"]
+[ext_resource type="Script" path="res://scripts/ModelSlot.cs" id="9_slot"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_drone"]
 size = Vector3(1.6, 0.6, 1.6)
@@ -18,7 +19,11 @@ script = ExtResource("1_drone")
 Hp = 1
 ScoreValue = 25
 
-[node name="Placeholder" type="MeshInstance3D" parent="."]
+[node name="Model" type="Node3D" parent="."]
+script = ExtResource("9_slot")
+ModelPath = "res://assets/models/enemy_drone.glb"
+
+[node name="Placeholder" type="MeshInstance3D" parent="Model"]
 mesh = SubResource("BoxMesh_drone")
 surface_material_override/0 = SubResource("Mat_drone")
 
