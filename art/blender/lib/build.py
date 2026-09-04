@@ -1,4 +1,13 @@
-"""bmesh-сборка low-poly моделей с покраской граней в ячейки палитры."""
+"""bmesh-сборка low-poly моделей с покраской граней в ячейки палитры.
+
+Примитивы: `sphere`, `cylinder`, `box`, `lathe` (тело вращения вокруг локальной
+оси Y). Правки формы: `deform` (произвольная функция по вершинам) и `bevel`
+(фаска по рёбрам). Все примитивы красят свои грани сразу и возвращают список
+граней, чтобы вызывающий код мог перекрасить часть из них по геометрии.
+
+Модификаторы не используются: `finish` отдаёт готовый меш, экспорт ничего не
+пересчитывает.
+"""
 import math
 
 import bmesh
@@ -39,6 +48,78 @@ class Builder:
         m = Matrix.Translation(Vector(location)) @ Matrix.Diagonal((*scale, 1.0))
         r = bmesh.ops.create_cube(self.bm, size=1.0, matrix=m)
         return self._finish_part(r["verts"], cell)
+
+    def lathe(self, profile, segments, location, cell, scale=(1.0, 1.0), cap=True, flip=False):
+        """Тело вращения вокруг локальной оси Y.
+
+        `profile` — точки (radius, y) от носа к корме (y убывает). Радиус 0 на
+        конце даёт вершину-полюс и веер треугольников; радиус > 0 оставляет
+        открытое кольцо, если `cap=False`, иначе закрывает его n-угольником.
+        `scale=(sx, sz)` сжимает радиусы по X и Z независимо — сечение эллипс.
+        `flip=True` разворачивает нормали внутрь: так строятся видимые изнутри
+        поверхности (жерло сопла), потому что материалы палитры односторонние.
+        """
+        sx, sz = scale
+        origin = Vector(location)
+        step = 2.0 * math.pi / segments
+        rings = []
+        for radius, y in profile:
+            if radius <= 0.0:
+                rings.append([self.bm.verts.new(origin + Vector((0.0, y, 0.0)))])
+                continue
+            rings.append([
+                self.bm.verts.new(origin + Vector((
+                    radius * sx * math.cos(i * step), y, radius * sz * math.sin(i * step))))
+                for i in range(segments)
+            ])
+
+        # Порядок обхода подобран так, чтобы нормали смотрели наружу без recalc.
+        faces = []
+        for top, bottom in zip(rings, rings[1:]):
+            for i in range(segments):
+                j = (i + 1) % segments
+                if len(top) == 1:
+                    loop = (top[0], bottom[j], bottom[i])
+                elif len(bottom) == 1:
+                    loop = (top[i], top[j], bottom[0])
+                else:
+                    loop = (top[i], top[j], bottom[j], bottom[i])
+                faces.append(self.bm.faces.new(loop))
+        if cap:
+            if len(rings[0]) > 1:
+                faces.append(self.bm.faces.new(tuple(reversed(rings[0]))))
+            if len(rings[-1]) > 1:
+                faces.append(self.bm.faces.new(tuple(rings[-1])))
+        if flip:
+            for f in faces:
+                f.normal_flip()
+        self.bm.normal_update()
+        self.paint(faces, cell)
+        return faces
+
+    # --- правки формы ----------------------------------------------------
+    def deform(self, faces, fn):
+        """Двигает каждую уникальную вершину граней: `fn(Vector) -> Vector`."""
+        for v in {v for f in faces if f.is_valid for v in f.verts}:
+            v.co = Vector(fn(Vector(v.co)))
+        self.bm.normal_update()
+        return faces
+
+    def bevel(self, faces, offset=0.03, segments=2, cell=None):
+        """Фаска по всем рёбрам набора граней: коробки перестают быть картонными.
+
+        Возвращает уцелевшие исходные грани вместе с новыми. `cell` красит
+        результат целиком — у новых граней своей развёртки нет.
+        """
+        edges = list({e for f in faces if f.is_valid for e in f.edges})
+        result = bmesh.ops.bevel(self.bm, geom=edges, offset=offset, segments=segments,
+                                 affect="EDGES", profile=0.7)
+        out = list(dict.fromkeys([f for f in faces if f.is_valid]
+                                 + [f for f in result["faces"] if f.is_valid]))
+        self.bm.normal_update()
+        if cell is not None:
+            self.paint(out, cell)
+        return out
 
     # --- покраска -------------------------------------------------------
     def paint(self, faces, cell):
