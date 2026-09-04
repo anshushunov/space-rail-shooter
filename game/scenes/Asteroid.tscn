@@ -22,7 +22,7 @@ script = ExtResource("1_asteroid")
 
 [node name="Model" type="Node3D" parent="."]
 script = ExtResource("9_slot")
-ModelPath = "res://assets/models/asteroid.glb"
+ModelPaths = PackedStringArray("res://assets/models/asteroid_a.glb", "res://assets/models/asteroid_b.glb", "res://assets/models/asteroid_c.glb")
 
 [node name="Placeholder" type="MeshInstance3D" parent="Model"]
 mesh = SubResource("SphereMesh_rock")
