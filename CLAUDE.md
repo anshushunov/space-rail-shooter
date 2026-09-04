@@ -26,6 +26,7 @@ dotnet test game/SpaceRail.sln
 scripts/art.sh test           # unittest палитры (обычный Python)
 scripts/art.sh make-palette   # art/blender/palette.png + копия в game/assets/textures
 scripts/art.sh ship           # строит корабль: ship.blend, ship.glb, превью
+ART_OVERWRITE=1 scripts/art.sh ship   # пересборка с нуля перезаписывает ship.blend; после ручных правок использовать export
 scripts/art.sh export         # переэкспорт всех .blend после ручных правок
 scripts/art.sh check          # лимиты полигонажа и габаритов .glb, код 1 при нарушении
 scripts/art.sh import         # Godot --import, чтобы ModelSlot увидел новые .glb

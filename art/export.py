@@ -20,9 +20,15 @@ if not blends:
 for blend in blends:
     name = os.path.splitext(os.path.basename(blend))[0]
     bpy.ops.wm.open_mainfile(filepath=blend)
+    # Файл мог остаться сохранённым в режиме правки — экспорт требует OBJECT.
+    if bpy.context.mode != "OBJECT":
+        bpy.ops.object.mode_set(mode="OBJECT")
     obj = bpy.data.objects.get(name)
     if obj is None or obj.type != "MESH":
         raise SystemExit(f"EXPORT_MISSING_OBJECT: в {blend} нет меш-объекта {name}")
+    extra = sorted(o.name for o in bpy.data.objects if o.type == "MESH" and o.name != name)
+    if extra:
+        raise SystemExit(f"EXPORT_EXTRA_OBJECTS: {name}: {extra}")
     out = os.path.join(MODELS, f"{name}.glb")
     export.export_glb(obj, out)
     print("EXPORTED", name, out, os.path.getsize(out))

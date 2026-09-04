@@ -31,6 +31,14 @@ class PaletteTests(unittest.TestCase):
         self.assertFalse(palette.is_emissive("cream"))
         self.assertFalse(palette.is_emissive("yellow"))
 
+    def test_emissive_names_match_rows(self):
+        for name, (_col, row) in palette.NAMES.items():
+            emissive_row = row in palette.EMISSIVE_ROWS
+            if name.startswith("emit_"):
+                self.assertTrue(emissive_row, f"{name} не в эмиссивном ряду")
+            else:
+                self.assertFalse(emissive_row, f"{name} в эмиссивном ряду без префикса emit_")
+
     def test_hex_to_rgb(self):
         self.assertEqual(palette.hex_to_rgb("#FFFFFF"), (1.0, 1.0, 1.0))
         r, g, b = palette.hex_to_rgb("#F08A3C")

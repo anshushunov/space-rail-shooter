@@ -50,11 +50,16 @@ class Builder:
                 loop[self.uv].uv = (u, v)
 
     # --- завершение -------------------------------------------------------
-    def finish(self, name, materials, smooth_angle_deg=30.0):
+    def finish(self, name, smooth_angle_deg=30.0):
         mesh = bpy.data.meshes.new(name)
         self.bm.to_mesh(mesh)
         self.bm.free()
-        for mat in materials:
+        # Порядок слотов фиксирован: 0 — базовый, 1 — эмиссивный (см. paint).
+        try:
+            slots = [bpy.data.materials["palette"], bpy.data.materials["palette_emit"]]
+        except KeyError as exc:
+            raise SystemExit("MATERIALS_MISSING: call ensure_palette_materials first") from exc
+        for mat in slots:
             mesh.materials.append(mat)
         obj = bpy.data.objects.new(name, mesh)
         bpy.context.collection.objects.link(obj)

@@ -5,6 +5,10 @@ import bpy
 
 
 def save_blend(path: str) -> None:
+    # .blend — источник правды после ручных правок, генератор его не затирает молча.
+    if os.path.exists(path) and os.environ.get("ART_OVERWRITE") != "1":
+        print(f"BLEND_EXISTS {path} — set ART_OVERWRITE=1 to rebuild")
+        raise SystemExit(2)
     os.makedirs(os.path.dirname(path), exist_ok=True)
     for img in bpy.data.images:
         if img.name == "palette" and not img.packed_file:

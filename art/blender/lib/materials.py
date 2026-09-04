@@ -14,6 +14,7 @@ def ensure_palette_materials(palette_path: str):
 def _make(name: str, img, emissive: bool):
     mat = bpy.data.materials.get(name) or bpy.data.materials.new(name)
     mat.use_nodes = True
+    mat.use_backface_culling = True
     nt = mat.node_tree
     nt.nodes.clear()
     out = nt.nodes.new("ShaderNodeOutputMaterial")

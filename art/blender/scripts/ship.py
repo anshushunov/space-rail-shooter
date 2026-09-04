@@ -1,4 +1,4 @@
-"""Корабль игрока «Жук». Запуск: blender -b --python art/blender/scripts/ship.py --python-exit-code 1."""
+"""Корабль игрока «Жук». Запуск: blender -b --python-exit-code 1 --python art/blender/scripts/ship.py."""
 import os
 import sys
 
@@ -18,7 +18,7 @@ GLB = os.path.join(REPO, "game", "assets", "models", "ship.glb")
 PREVIEW = os.path.join(REPO, "art", "refs", "preview-ship")
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
-base, emit = materials.ensure_palette_materials(PALETTE)
+materials.ensure_palette_materials(PALETTE)
 
 b = build.Builder()
 
@@ -44,7 +44,7 @@ for sx in (-1.0, 1.0):
     b.cylinder(8, 0.06, 0.8, (sx * 0.45, 1.85, 0.15), "yellow", axis="Y")
     b.cylinder(8, 0.12, 0.25, (sx * 0.45, 1.5, 0.15), "navy", axis="Y")
 
-ship = b.finish("ship", [base, emit])
+ship = b.finish("ship")
 
 print("SHIP_TRIS", build.tri_count(ship))
 print("SHIP_DIMS", tuple(round(v, 2) for v in ship.dimensions))

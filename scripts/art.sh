@@ -5,7 +5,9 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 BLENDER="${BLENDER:-/c/Program Files/Blender Foundation/Blender 5.2/blender.exe}"
 GODOT="${GODOT:-/c/gamedev/Godot_v4.7.1-stable_mono_win64/Godot_v4.7.1-stable_mono_win64_console.exe}"
 
-blender_run() { "$BLENDER" -b --python "$1" --python-exit-code 1; }
+# --python-exit-code ДО --python: Blender обрабатывает аргументы последовательно,
+# после --python скрипт уже выполнен и флаг не влияет на код возврата.
+blender_run() { "$BLENDER" -b --python-exit-code 1 --python "$1"; }
 
 cmd="${1:-}"
 shift || true
