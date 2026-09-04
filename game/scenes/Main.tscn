@@ -1,10 +1,11 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/Main.cs" id="1_main"]
 [ext_resource type="Script" path="res://scripts/World.cs" id="2_world"]
 [ext_resource type="Script" path="res://scripts/Spawner.cs" id="3_spawner"]
 [ext_resource type="PackedScene" path="res://scenes/Asteroid.tscn" id="4_asteroid"]
 [ext_resource type="PackedScene" path="res://scenes/Player.tscn" id="5_player"]
+[ext_resource type="PackedScene" path="res://scenes/Hud.tscn" id="6_hud"]
 
 [sub_resource type="Environment" id="Environment_space"]
 background_mode = 1
@@ -37,3 +38,5 @@ script = ExtResource("2_world")
 [node name="Spawner" type="Node" parent="."]
 script = ExtResource("3_spawner")
 AsteroidScene = ExtResource("4_asteroid")
+
+[node name="Hud" parent="." instance=ExtResource("6_hud")]

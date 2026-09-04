@@ -14,6 +14,7 @@ public partial class Asteroid : Area3D, IDamageable
 
     public override void _Ready()
     {
+        BodyEntered += OnBodyEntered;
         _state = Session.Of(this).State;
         var rng = new Random();
         _spin = new Vector3(Rand(rng), Rand(rng), Rand(rng));
@@ -27,6 +28,13 @@ public partial class Asteroid : Area3D, IDamageable
         Hp -= damage;
         if (Hp > 0) return;
         _state.AddScore(ScoreValue);
+        QueueFree();
+    }
+
+    private void OnBodyEntered(Node3D body)
+    {
+        if (body is not Player player) return;
+        player.TakeHit(1);
         QueueFree();
     }
 
