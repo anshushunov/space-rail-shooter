@@ -431,13 +431,201 @@ git commit -m "feat: ModelSlot выбирает случайный вариан�
 
 ---
 
-### Task 4: Дрон — добавляется после выбора концепта
+### Task 4: Дрон
 
-*(Раздел дописывается контроллером после того, как владелец выберет концепт врагов. Скрипт `art/blender/scripts/enemy_drone.py`, лимит `enemy_drone` в `LIMITS`, скриншот из игры с дроном носом к камере.)*
+Концепт: `art/refs/concept-enemies-main.png` (слева) и `concept-enemies-ortho.png` (верхний ряд). Плоский клин-дельта, тёмно-синий гребень по оси, два скошенных плавника на концах, красный сенсор-глаз на носу в сером кольце, красный двигатель сзади сверху.
 
-### Task 5: Стрелок — добавляется после выбора концепта
+**Files:**
+- Create: `art/blender/scripts/enemy_drone.py`
+- Modify: `art/check_models.py` (`LIMITS["enemy_drone"]`)
+- Create (generated): `art/blender/enemy_drone.blend`, `game/assets/models/enemy_drone.glb` (+ `.import`, `enemy_drone_palette.png` + `.import` после Task 5 импорта), `art/refs/preview-enemy_drone-*.png`
 
-*(Аналогично: `enemy_shooter.py`, лимит, скриншот.)*
+**Interfaces:**
+- Consumes: `pipeline.run`, `Builder.box/cylinder/deform/bevel/paint`, `center`.
+- Produces: `LIMITS["enemy_drone"] = {"tris": (500, 800), "x": (1.3, 1.9), "y": (1.2, 1.8), "z": (0.35, 0.7)}`.
+
+- [ ] **Step 1: Создать `art/blender/scripts/enemy_drone.py`**
+
+```python
+"""Враг-дрон: плоский клин с красным глазом. Нос по +Y. Запуск: scripts/art.sh drone."""
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from mathutils import Vector  # noqa: E402
+
+from lib import pipeline  # noqa: E402
+from lib.build import center  # noqa: E402
+
+NOSE_Y, TAIL_Y = 0.78, -0.72
+
+
+def taper(v):
+    """К носу клин сужается по X почти в точку и слегка сплющивается по Z."""
+    t = min(max((v.y - TAIL_Y) / (NOSE_Y - TAIL_Y), 0.0), 1.0)
+    return Vector((v.x * (1.0 - 0.88 * t), v.y, v.z * (1.0 - 0.35 * t)))
+
+
+def fin_lean(v):
+    """Плавники отклоняются наружу и вверх к задней кромке."""
+    t = min(max((TAIL_Y - v.y) / 0.5 + 0.5, 0.0), 1.0)
+    side = 1.0 if v.x > 0 else -1.0
+    return Vector((v.x + side * 0.12 * t, v.y, v.z + 0.10 * t))
+
+
+def build(b):
+    body = b.box((1.50, NOSE_Y - TAIL_Y, 0.34), (0.0, (NOSE_Y + TAIL_Y) / 2, 0.0), "gray")
+    b.deform(body, taper)
+    body = b.bevel(body, offset=0.03, segments=2, cell="gray")
+    b.paint([f for f in body if f.normal.z < -0.5], "gray_dark")
+
+    spine = b.box((0.34, 1.10, 0.14), (0.0, -0.02, 0.20), "navy")
+    b.deform(spine, taper)
+    b.bevel(spine, offset=0.02, segments=2, cell="navy")
+
+    # Глаз: серое кольцо и красное эмиссивное ядро на самом носу.
+    ring = b.cylinder(12, 0.17, 0.14, (0.0, NOSE_Y + 0.02, 0.0), "gray_dark", axis="Y")
+    core = b.cylinder(12, 0.10, 0.16, (0.0, NOSE_Y + 0.03, 0.0), "emit_red", axis="Y")
+    b.paint([f for f in ring if f.normal.y > 0.9], "navy")
+
+    for sx in (-1.0, 1.0):
+        fin = b.box((0.08, 0.46, 0.26), (sx * 0.70, -0.50, 0.14), "navy")
+        b.deform(fin, fin_lean)
+        b.bevel(fin, offset=0.015, segments=1, cell="navy")
+
+    engine = b.box((0.36, 0.26, 0.18), (0.0, TAIL_Y - 0.02, 0.10), "navy")
+    engine = b.bevel(engine, offset=0.02, segments=1, cell="navy")
+    b.paint([f for f in engine if f.normal.y < -0.9], "emit_red")
+
+
+pipeline.run("enemy_drone", build)
+```
+
+- [ ] **Step 2: Лимит** — в `art/check_models.py` добавить в `LIMITS`:
+```python
+    "enemy_drone": {"tris": (500, 800), "x": (1.3, 1.9), "y": (1.2, 1.8), "z": (0.35, 0.7)},
+```
+
+- [ ] **Step 3: Собрать и проверить**
+
+```bash
+scripts/art.sh drone 2>&1 | rg "ENEMY_DRONE_|PREVIEW_WRITTEN|Error|Traceback"
+scripts/art.sh check 2>&1 | rg "CHECK"
+```
+Expected: `ENEMY_DRONE_TRIS` в 500–800, `ENEMY_DRONE_DIMS` около `(1.6, 1.6, 0.5)` в лимитах, `CHECK_RESULT OK`. Открыть `art/refs/preview-enemy_drone-top.png` и `-side.png`: клин, тёмный гребень, красный глаз на носу, плавники, красный блок сзади. Если полигонаж ниже 500, поднять `segments` фаски корпуса до 3; если выше 800, снизить до 1 у плавников и двигателя.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add art/blender/scripts/enemy_drone.py art/check_models.py art/blender/enemy_drone.blend game/assets/models/enemy_drone.glb art/refs/preview-enemy_drone-*
+git commit -m "feat(art): враг-дрон по концепту, клин с красным сенсором"
+```
+
+---
+
+### Task 5: Стрелок и оба врага в игре
+
+Концепт: `art/refs/concept-enemies-main.png` (справа) и `concept-enemies-ortho.png` (нижний ряд). Широкий бронированный корпус, тёмно-синий продольный паз по центру верха, два плечевых блока, два боковых цилиндрических излучателя с маджентовым свечением вперёд, ряд из четырёх красных сенсоров-щелей спереди внизу, два красных двигателя сверху сзади.
+
+**Files:**
+- Create: `art/blender/scripts/enemy_shooter.py`
+- Modify: `art/check_models.py` (`LIMITS["enemy_shooter"]`)
+- Create (generated): `art/blender/enemy_shooter.blend`, `game/assets/models/enemy_shooter.glb`, все `.import` и `*_palette.png` для обоих врагов, `art/refs/preview-enemy_shooter-*.png`, `docs/playtests/shot-enemies.png`
+
+**Interfaces:**
+- Produces: `LIMITS["enemy_shooter"] = {"tris": (800, 1200), "x": (1.8, 2.4), "y": (1.8, 2.4), "z": (0.7, 1.2)}`.
+
+- [ ] **Step 1: Создать `art/blender/scripts/enemy_shooter.py`**
+
+```python
+"""Враг-стрелок: бронированная турель с двумя излучателями. Нос по +Y. Запуск: scripts/art.sh shooter."""
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from mathutils import Vector  # noqa: E402
+
+from lib import pipeline  # noqa: E402
+
+FRONT_Y, REAR_Y = 0.90, -0.90
+
+
+def nose_taper(v):
+    """Корпус к носу слегка сужается и снижается, как у концепта."""
+    t = min(max((v.y - REAR_Y) / (FRONT_Y - REAR_Y), 0.0), 1.0)
+    return Vector((v.x * (1.0 - 0.18 * t), v.y, v.z * (1.0 - 0.22 * t) - 0.04 * t))
+
+
+def shoulder_sweep(v):
+    """Плечевые блоки уходят назад к внешнему краю."""
+    t = min(max((abs(v.x) - 0.55) / 0.6, 0.0), 1.0)
+    return Vector((v.x, v.y - 0.25 * t, v.z - 0.05 * t))
+
+
+def build(b):
+    hull = b.box((1.40, FRONT_Y - REAR_Y, 0.70), (0.0, 0.0, 0.0), "gray")
+    b.deform(hull, nose_taper)
+    hull = b.bevel(hull, offset=0.06, segments=3, cell="gray")
+    b.paint([f for f in hull if f.normal.z < -0.6], "gray_dark")
+
+    slot = b.box((0.44, 1.20, 0.16), (0.0, 0.15, 0.36), "navy")
+    b.deform(slot, nose_taper)
+    b.bevel(slot, offset=0.02, segments=2, cell="navy")
+
+    for sx in (-1.0, 1.0):
+        shoulder = b.box((0.60, 1.00, 0.44), (sx * 0.85, 0.10, 0.12), "gray")
+        b.deform(shoulder, shoulder_sweep)
+        b.bevel(shoulder, offset=0.04, segments=2, cell="gray")
+
+        pod = b.cylinder(12, 0.21, 0.90, (sx * 0.95, 0.50, -0.14), "gray_dark", axis="Y")
+        b.paint([f for f in pod if f.normal.y > 0.9], "navy")
+        b.cylinder(12, 0.12, 0.16, (sx * 0.95, 0.98, -0.14), "emit_magenta", axis="Y")
+
+        engine = b.cylinder(12, 0.16, 0.36, (sx * 0.45, REAR_Y - 0.05, 0.34), "navy", axis="Y")
+        b.paint([f for f in engine if f.normal.y < -0.9], "emit_red")
+
+    for gx in (-0.42, -0.14, 0.14, 0.42):
+        b.box((0.18, 0.06, 0.08), (gx, FRONT_Y * (1.0 - 0.0) + 0.0, -0.16), "emit_red")
+
+
+pipeline.run("enemy_shooter", build)
+```
+
+Примечание к сенсорам: коробки стоят на плоскости носа `y = FRONT_Y`; после `nose_taper` корпус в этой зоне уже сужен по X до 0.82 и по Z до 0.78, поэтому `gx = ±0.42` остаётся внутри ширины 1.15, а `z = −0.16` внутри половины высоты 0.27. Если сенсоры уходят внутрь корпуса и не видны на превью, сместить их на `y = FRONT_Y + 0.03`.
+
+- [ ] **Step 2: Лимит** — добавить в `LIMITS`:
+```python
+    "enemy_shooter": {"tris": (800, 1200), "x": (1.8, 2.4), "y": (1.8, 2.4), "z": (0.7, 1.2)},
+```
+
+- [ ] **Step 3: Собрать и проверить**
+
+```bash
+scripts/art.sh shooter 2>&1 | rg "ENEMY_SHOOTER_|PREVIEW_WRITTEN|Error|Traceback"
+scripts/art.sh check 2>&1 | rg "CHECK"
+scripts/art.sh test 2>&1 | tail -1
+```
+Expected: `ENEMY_SHOOTER_TRIS` в 800–1200, `ENEMY_SHOOTER_DIMS` около `(2.3, 2.1, 0.9)`, `CHECK_RESULT OK`, тесты OK. Превью `-top` и `-side`: широкий корпус, паз, плечи, два ствола вперёд, красные двигатели сзади.
+
+- [ ] **Step 4: Оба врага в игре**
+
+```bash
+dotnet build game/SpaceRail.sln 2>&1 | tail -1
+scripts/art.sh import 2>&1 | rg -i "error" || echo "import clean"
+"$GODOT" --headless --path game --quit-after 900 2>&1 | rg "ERROR|WARNING" | sort | uniq -c
+rg -n "compress_to" game/assets/models/enemy_*_palette.png.import
+scripts/art.sh shot 10 res://../docs/playtests/shot-enemies.png 2>&1 | rg screenshot
+```
+Expected: `import clean`; ни одного предупреждения `ModelSlot` (все пять моделей найдены); `compress_to=0` (иначе поправить и повторить импорт); на скриншоте хотя бы один враг **носом к камере**: у дрона виден красный глаз, у стрелка маджентовые излучатели и красная полоса сенсоров. Если на кадре врагов нет, повторить `shot 14` и `shot 18`, сохранить удачный как `shot-enemies.png`. Если враг виден кормой (красные двигатели к камере, глаз не виден), поворот `Model` в сцене не применился: остановиться и доложить.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add art/blender/scripts/enemy_shooter.py art/check_models.py art/blender/enemy_shooter.blend game/assets/models/enemy_* art/refs/preview-enemy_shooter-* docs/playtests/shot-enemies.png
+git commit -m "feat(art): враг-стрелок по концепту, оба врага в игре носом к игроку"
+```
 
 ---
 
