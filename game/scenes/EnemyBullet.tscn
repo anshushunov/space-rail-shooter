@@ -1,0 +1,32 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/Bullet.cs" id="1_bullet"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_ebullet"]
+radius = 0.25
+height = 0.5
+
+[sub_resource type="StandardMaterial3D" id="Mat_ebullet"]
+albedo_color = Color(1, 0.35, 0.2, 1)
+emission_enabled = true
+emission = Color(1, 0.35, 0.2, 1)
+emission_energy_multiplier = 2.0
+
+[sub_resource type="SphereShape3D" id="Shape_ebullet"]
+radius = 0.3
+
+[node name="EnemyBullet" type="Area3D"]
+collision_layer = 8
+collision_mask = 1
+monitorable = false
+script = ExtResource("1_bullet")
+Direction = Vector3(0, 0, 1)
+Speed = 30.0
+Lifetime = 4.0
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_ebullet")
+surface_material_override/0 = SubResource("Mat_ebullet")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("Shape_ebullet")

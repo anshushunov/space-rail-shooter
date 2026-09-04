@@ -1,0 +1,48 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://scripts/Main.cs" id="1_main"]
+[ext_resource type="Script" path="res://scripts/World.cs" id="2_world"]
+[ext_resource type="Script" path="res://scripts/Spawner.cs" id="3_spawner"]
+[ext_resource type="PackedScene" path="res://scenes/Asteroid.tscn" id="4_asteroid"]
+[ext_resource type="PackedScene" path="res://scenes/Player.tscn" id="5_player"]
+[ext_resource type="PackedScene" path="res://scenes/Hud.tscn" id="6_hud"]
+[ext_resource type="PackedScene" path="res://scenes/EnemyDrone.tscn" id="7_drone"]
+[ext_resource type="PackedScene" path="res://scenes/EnemyShooter.tscn" id="8_shooter"]
+[ext_resource type="Script" path="res://scripts/CameraRig.cs" id="9_camera"]
+
+[sub_resource type="Environment" id="Environment_space"]
+background_mode = 1
+background_color = Color(0.02, 0.02, 0.05, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.45, 0.45, 0.6, 1)
+ambient_light_energy = 0.7
+
+[node name="Main" type="Node3D"]
+script = ExtResource("1_main")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.985, 0.174, 0, -0.174, 0.985, 0, 3, 12)
+script = ExtResource("9_camera")
+fov = 70.0
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.643, 0.766, 0, -0.766, 0.643, 0, 20, 0)
+light_energy = 1.2
+
+[node name="Env" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_space")
+
+[node name="World" type="Node3D" parent="."]
+script = ExtResource("2_world")
+
+[node name="Projectiles" type="Node3D" parent="."]
+
+[node name="Player" parent="." instance=ExtResource("5_player")]
+
+[node name="Spawner" type="Node" parent="."]
+script = ExtResource("3_spawner")
+AsteroidScene = ExtResource("4_asteroid")
+DroneScene = ExtResource("7_drone")
+ShooterScene = ExtResource("8_shooter")
+
+[node name="Hud" parent="." instance=ExtResource("6_hud")]

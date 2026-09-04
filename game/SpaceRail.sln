@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpaceRail.Core", "core\SpaceRail.Core.csproj", "{7A4A348E-EDDA-494C-A50F-8C7CADA475FA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpaceRail.Tests", "tests\SpaceRail.Tests.csproj", "{26E2E9D1-8BAB-4E47-B8DF-64EC9A0847F8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpaceRail.Game", "SpaceRail.Game.csproj", "{896E8E7D-B6A0-44C6-870E-239217A104F5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7A4A348E-EDDA-494C-A50F-8C7CADA475FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A4A348E-EDDA-494C-A50F-8C7CADA475FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A4A348E-EDDA-494C-A50F-8C7CADA475FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A4A348E-EDDA-494C-A50F-8C7CADA475FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{26E2E9D1-8BAB-4E47-B8DF-64EC9A0847F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{26E2E9D1-8BAB-4E47-B8DF-64EC9A0847F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{26E2E9D1-8BAB-4E47-B8DF-64EC9A0847F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{26E2E9D1-8BAB-4E47-B8DF-64EC9A0847F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{896E8E7D-B6A0-44C6-870E-239217A104F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{896E8E7D-B6A0-44C6-870E-239217A104F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{896E8E7D-B6A0-44C6-870E-239217A104F5}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{896E8E7D-B6A0-44C6-870E-239217A104F5}.Release|Any CPU.Build.0 = Debug|Any CPU
+	EndGlobalSection
+EndGlobal

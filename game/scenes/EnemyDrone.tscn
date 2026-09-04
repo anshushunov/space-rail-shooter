@@ -1,0 +1,31 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/EnemyDrone.cs" id="1_drone"]
+[ext_resource type="Script" path="res://scripts/ModelSlot.cs" id="9_slot"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_drone"]
+size = Vector3(1.6, 0.6, 1.6)
+
+[sub_resource type="StandardMaterial3D" id="Mat_drone"]
+albedo_color = Color(0.9, 0.25, 0.2, 1)
+
+[sub_resource type="BoxShape3D" id="Shape_drone"]
+size = Vector3(1.6, 0.6, 1.6)
+
+[node name="EnemyDrone" type="Area3D"]
+collision_layer = 4
+collision_mask = 1
+script = ExtResource("1_drone")
+Hp = 1
+ScoreValue = 25
+
+[node name="Model" type="Node3D" parent="."]
+script = ExtResource("9_slot")
+ModelPath = "res://assets/models/enemy_drone.glb"
+
+[node name="Placeholder" type="MeshInstance3D" parent="Model"]
+mesh = SubResource("BoxMesh_drone")
+surface_material_override/0 = SubResource("Mat_drone")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("Shape_drone")
