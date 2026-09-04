@@ -2,8 +2,6 @@
 **/bin/
 **/obj/
 **/.godot/
-*.import
-*.uid
 TestResults/
 *.user
 

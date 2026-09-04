@@ -39,6 +39,7 @@ public partial class Hud : CanvasLayer
         _score.Text = _state.Score.ToString();
         _finalScore.Text = $"Счёт: {_state.Score}";
         _gameOver.Visible = !_state.IsAlive;
+        if (_gameOver.Visible) _restart.GrabFocus();
     }
 
     private void OnRestartPressed()

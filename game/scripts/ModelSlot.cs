@@ -8,6 +8,8 @@ namespace SpaceRail.Game;
 /// </summary>
 public partial class ModelSlot : Node3D
 {
+    private static readonly HashSet<string> Reported = new();
+
     [Export] public string ModelPath { get; set; } = "";
 
     public override void _Ready()
@@ -17,11 +19,18 @@ public partial class ModelSlot : Node3D
         var placeholder = GetNodeOrNull<Node3D>("Placeholder");
         if (!ResourceLoader.Exists(ModelPath))
         {
-            GD.PushWarning($"ModelSlot: {ModelPath} не найден, остаётся заглушка");
+            if (Reported.Add(ModelPath))
+                GD.PushWarning($"ModelSlot: {ModelPath} не найден, остаётся заглушка");
             return;
         }
 
         var scene = ResourceLoader.Load<PackedScene>(ModelPath);
+        if (scene is null)
+        {
+            GD.PushWarning($"ModelSlot: {ModelPath} не удалось загрузить как PackedScene, остаётся заглушка");
+            return;
+        }
+
         AddChild(scene.Instantiate<Node3D>());
         if (placeholder is not null) placeholder.Visible = false;
     }

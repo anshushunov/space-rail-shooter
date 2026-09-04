@@ -9,7 +9,7 @@
 - `game/` — Godot-проект. `game/scripts/*.cs` — ноды, `game/scenes/*.tscn` — сцены.
 - `game/core/` — чистая логика без Godot (`SpaceRail.Core`), тестируется.
 - `game/tests/` — xUnit.
-- `art/` — Blender: скрипты генерации, .blend, палитра, экспорт.
+- `art/` — Blender: скрипты генерации, .blend, палитра, экспорт (появится на этапе 3).
 - `docs/style-guide.md` — правила арта.
 
 ## Команды
