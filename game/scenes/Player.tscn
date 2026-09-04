@@ -1,6 +1,7 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/Player.cs" id="1_player"]
+[ext_resource type="PackedScene" path="res://scenes/PlayerBullet.tscn" id="2_bullet"]
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_ship"]
 radius = 0.6
@@ -17,6 +18,7 @@ height = 3.0
 collision_layer = 1
 collision_mask = 0
 script = ExtResource("1_player")
+BulletScene = ExtResource("2_bullet")
 
 [node name="Model" type="Node3D" parent="."]
 

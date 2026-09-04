@@ -23,6 +23,7 @@ public partial class Asteroid : Area3D, IDamageable
 
     public void TakeHit(int damage)
     {
+        if (Hp <= 0) return;
         Hp -= damage;
         if (Hp > 0) return;
         _state.AddScore(ScoreValue);

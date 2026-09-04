@@ -15,11 +15,18 @@ public partial class Player : CharacterBody3D
 
     private GameState _state = null!;
     private Node3D _model = null!;
+    private Node _projectiles = null!;
+    private Marker3D _muzzleLeft = null!;
+    private Marker3D _muzzleRight = null!;
+    private float _cooldown;
 
     public override void _Ready()
     {
         _state = Session.Of(this).State;
         _model = GetNode<Node3D>("Model");
+        _projectiles = GetNode("../Projectiles");
+        _muzzleLeft = GetNode<Marker3D>("MuzzleLeft");
+        _muzzleRight = GetNode<Marker3D>("MuzzleRight");
     }
 
     public override void _Process(double delta)
@@ -37,6 +44,24 @@ public partial class Player : CharacterBody3D
         var targetBank = -input.X * Mathf.DegToRad(BankDegrees);
         var bank = Mathf.LerpAngle(_model.Rotation.Z, targetBank, 10f * dt);
         _model.Rotation = new Vector3(0f, 0f, bank);
+
+        _cooldown -= dt;
+        if (Input.IsActionPressed("fire") && _cooldown <= 0f)
+        {
+            Fire();
+            _cooldown = FireCooldown;
+        }
+    }
+
+    private void Fire()
+    {
+        if (BulletScene is null) return;
+        foreach (var muzzle in new[] { _muzzleLeft, _muzzleRight })
+        {
+            var bullet = BulletScene.Instantiate<Bullet>();
+            _projectiles.AddChild(bullet);
+            bullet.GlobalPosition = muzzle.GlobalPosition;
+        }
     }
 
     public void TakeHit(int damage) => _state.TakeDamage(damage);
