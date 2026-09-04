@@ -6,7 +6,8 @@
 граней, чтобы вызывающий код мог перекрасить часть из них по геометрии.
 
 Модификаторы не используются: `finish` отдаёт готовый меш, экспорт ничего не
-пересчитывает.
+пересчитывает. `finish` ещё и канонизирует порядок граней: без этого одна и та
+же геометрия даёт разные байты .glb от запуска к запуску.
 """
 import math
 
@@ -19,6 +20,10 @@ from . import palette
 
 def center(face) -> Vector:
     return face.calc_center_median()
+
+
+def _vert_key(v) -> tuple:
+    return tuple(round(c, 5) for c in v.co)
 
 
 def tri_count(obj) -> int:
@@ -34,6 +39,7 @@ class Builder:
     def sphere(self, segments, rings, scale, location, cell):
         m = Matrix.Translation(Vector(location)) @ Matrix.Diagonal((*scale, 1.0))
         r = bmesh.ops.create_uvsphere(self.bm, u_segments=segments, v_segments=rings, radius=1.0, matrix=m)
+        self._reorder_faces(r["verts"])
         return self._finish_part(r["verts"], cell)
 
     def cylinder(self, segments, radius, depth, location, cell, axis="Y"):
@@ -48,6 +54,10 @@ class Builder:
         m = Matrix.Translation(Vector(location)) @ Matrix.Diagonal((*scale, 1.0))
         r = bmesh.ops.create_cube(self.bm, size=1.0, matrix=m)
         return self._finish_part(r["verts"], cell)
+
+    def adopt(self, verts, cell):
+        """Принять уже созданные вершины (например, из bmesh.ops) как часть модели и покрасить их грани."""
+        return self._finish_part(verts, cell)
 
     def lathe(self, profile, segments, location, cell, scale=(1.0, 1.0), cap=True, flip=False):
         """Тело вращения вокруг локальной оси Y.
@@ -111,7 +121,14 @@ class Builder:
         Возвращает уцелевшие исходные грани вместе с новыми. `cell` красит
         результат целиком — у новых граней своей развёртки нет.
         """
-        edges = list({e for f in faces if f.is_valid for e in f.edges})
+        def edge_key(e):
+            a, c = (tuple(round(x, 5) for x in v.co) for v in e.verts)
+            return tuple(sorted((a, c)))
+
+        # Порядок рёбер фиксирован по координатам: bmesh.ops.bevel зависит от порядка
+        # входа, а итерация по set() меняется от запуска к запуску. Порядок граней на
+        # выходе всё равно свой у каждого процесса — его канонизирует finish.
+        edges = sorted({e for f in faces if f.is_valid for e in f.edges}, key=edge_key)
         result = bmesh.ops.bevel(self.bm, geom=edges, offset=offset, segments=segments,
                                  affect="EDGES", profile=0.7)
         out = list(dict.fromkeys([f for f in faces if f.is_valid]
@@ -132,6 +149,8 @@ class Builder:
 
     # --- завершение -------------------------------------------------------
     def finish(self, name, smooth_angle_deg=30.0):
+        # Без канонизации порядок граней в .glb пляшет от запуска к запуску.
+        self._reorder_faces(self.bm.verts)
         mesh = bpy.data.meshes.new(name)
         self.bm.to_mesh(mesh)
         self.bm.free()
@@ -149,6 +168,32 @@ class Builder:
         bpy.context.view_layer.objects.active = obj
         bpy.ops.object.shade_smooth_by_angle(angle=math.radians(smooth_angle_deg), keep_sharp_edges=False)
         return obj
+
+    def _reorder_faces(self, verts):
+        """Пересоздаёт грани набора в порядке, заданном только координатами.
+
+        `bmesh.ops` (`create_uvsphere`, `bevel`) отдают геометрию в порядке
+        внутренних хеш-таблиц по указателям: он меняется от процесса к процессу,
+        и при одинаковой геометрии .glb получался с разным порядком индексов.
+        Здесь фиксируются порядок граней и стартовая вершина каждой; обход цикла
+        сохраняется, поэтому нормали не меняются. Материал и UV переносятся —
+        `paint` кладёт одну ячейку палитры на все петли грани.
+        """
+        vs = set(verts)
+        faces = [f for f in self.bm.faces if all(v in vs for v in f.verts)]
+        saved = []
+        for f in faces:
+            loop = list(f.verts)
+            start = min(range(len(loop)), key=lambda i: _vert_key(loop[i]))
+            saved.append((loop[start:] + loop[:start], f.material_index,
+                          tuple(f.loops[0][self.uv].uv)))
+        bmesh.ops.delete(self.bm, geom=faces, context="FACES_ONLY")
+        for loop, index, uv in sorted(saved, key=lambda s: [_vert_key(v) for v in s[0]]):
+            f = self.bm.faces.new(loop)
+            f.material_index = index
+            for lo in f.loops:
+                lo[self.uv].uv = uv
+        self.bm.normal_update()
 
     def _finish_part(self, verts, cell):
         vs = set(verts)
