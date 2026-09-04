@@ -9,7 +9,7 @@
 - `game/` — Godot-проект. `game/scripts/*.cs` — ноды, `game/scenes/*.tscn` — сцены.
 - `game/core/` — чистая логика без Godot (`SpaceRail.Core`), тестируется.
 - `game/tests/` — xUnit.
-- `art/` — Blender: скрипты генерации, .blend, палитра, экспорт (появится на этапе 3).
+- `art/blender/lib/` — bpy-библиотека (палитра, материалы, сборка, экспорт). `art/blender/scripts/` — генераторы моделей. `art/blender/*.blend` — источник правды после ручных правок. `art/refs/` — концепты и превью.
 - `docs/style-guide.md` — правила арта.
 
 ## Команды
@@ -21,6 +21,17 @@ dotnet test game/SpaceRail.sln
 "$GODOT" --path game                                # запуск с окном
 ```
 
+Арт-пайплайн (Blender 5.2 headless, точка входа `scripts/art.sh`):
+```bash
+scripts/art.sh test           # unittest палитры (обычный Python)
+scripts/art.sh make-palette   # art/blender/palette.png + копия в game/assets/textures
+scripts/art.sh ship           # строит корабль: ship.blend, ship.glb, превью
+scripts/art.sh export         # переэкспорт всех .blend после ручных правок
+scripts/art.sh check          # лимиты полигонажа и габаритов .glb, код 1 при нарушении
+scripts/art.sh import         # Godot --import, чтобы ModelSlot увидел новые .glb
+scripts/art.sh shot 2.5 res://../docs/playtests/shot.png   # скриншот игры
+```
+
 ## Конвенции
 - Вперёд это -Z. Мир едет к игроку по +Z. Игрок стоит у начала координат.
 - `GameState` меняется только через свои методы; ноды его читают.
@@ -28,3 +39,6 @@ dotnet test game/SpaceRail.sln
 - Слои физики: 1 player, 2 player_bullet, 3 enemy, 4 enemy_bullet, 5 asteroid.
 - В `game/assets/models` только экспорт из Blender, руками не править.
 - Коммиты Conventional Commits, без упоминания LLM в авторстве.
+- Нос модели по +Y в Blender (экспортёр glTF даёт −Z в Godot). Проверять скриншотом, не арифметикой: `.tscn` пишет строки базиса.
+- После любого нового .glb обязателен `scripts/art.sh import`, иначе `ResourceLoader.Exists` не видит файл и остаётся заглушка.
+- Модели красятся UV в центры ячеек палитры; материалы `palette` и `palette_emit`, других не заводить.

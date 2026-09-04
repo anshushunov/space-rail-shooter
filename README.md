@@ -16,6 +16,11 @@ dotnet build game/SpaceRail.sln
 dotnet test game/SpaceRail.sln
 ```
 
+## Арт
+
+Модели строятся Python-скриптами в Blender 5.2 и экспортируются в `game/assets/models/*.glb`.
+Команды: `scripts/art.sh {test|make-palette|ship|export|check|import|shot}`. Подробности в `CLAUDE.md`.
+
 ## Управление
 
 WASD или стрелки: движение. Пробел: огонь. Геймпад: левый стик и кнопка A.
