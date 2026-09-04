@@ -34,6 +34,7 @@ public abstract partial class Enemy : Area3D, IDamageable
 
     private void OnBodyEntered(Node3D body)
     {
+        if (Hp <= 0) return;
         if (body is not Player player) return;
         player.TakeHit(1);
         QueueFree();
