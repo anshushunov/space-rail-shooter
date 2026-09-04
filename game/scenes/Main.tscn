@@ -1,0 +1,28 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/Main.cs" id="1_main"]
+
+[sub_resource type="Environment" id="Environment_space"]
+background_mode = 1
+background_color = Color(0.02, 0.02, 0.05, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.45, 0.45, 0.6, 1)
+ambient_light_energy = 0.7
+
+[node name="Main" type="Node3D"]
+script = ExtResource("1_main")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.985, -0.174, 0, 0.174, 0.985, 0, 3, 12)
+fov = 70.0
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.643, -0.766, 0, 0.766, 0.643, 0, 20, 0)
+light_energy = 1.2
+
+[node name="Env" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_space")
+
+[node name="World" type="Node3D" parent="."]
+
+[node name="Projectiles" type="Node3D" parent="."]
