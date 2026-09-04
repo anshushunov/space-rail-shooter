@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- Blender: `BLENDER="/c/Program Files/Blender Foundation/Blender 5.2/blender.exe"`. Все запуски headless: `"$BLENDER" -b --python <script> --python-exit-code 1` (без `--python-exit-code` Blender возвращает 0 даже при исключении).
+- Blender: `BLENDER="/c/Program Files/Blender Foundation/Blender 5.2/blender.exe"`. Все запуски headless: `"$BLENDER" -b --python-exit-code 1 --python <script>` (флаг строго **до** `--python`: Blender обрабатывает аргументы по порядку, иначе исключения дают exit 0; найдено финальным ревью 2026-09-05).
 - Godot: `GODOT="/c/gamedev/Godot_v4.7.1-stable_mono_win64/Godot_v4.7.1-stable_mono_win64_console.exe"`. Импорт: `"$GODOT" --headless --path game --import`. Smoke: `"$GODOT" --headless --path game --quit-after 300` без `ERROR`/`SCRIPT ERROR`/`Unhandled exception`. Скриншот: `"$GODOT" --path game -s res://tools/screenshot.gd -- <сек> <res://путь.png>` (открывает окно на несколько секунд).
 - Ось носа: Blender **+Y** → Godot −Z. 1 единица = 1 м.
 - Палитра 8×8, текстура 256×256, ячейка 32 px, ячейка = `(col, row)`, `row 0` внизу изображения (порядок пикселей bpy). UV грани = центр ячейки `((col+0.5)/8, (row+0.5)/8)`. Строки 6 и 7 эмиссивные.
@@ -271,7 +271,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 BLENDER="${BLENDER:-/c/Program Files/Blender Foundation/Blender 5.2/blender.exe}"
 GODOT="${GODOT:-/c/gamedev/Godot_v4.7.1-stable_mono_win64/Godot_v4.7.1-stable_mono_win64_console.exe}"
 
-blender_run() { "$BLENDER" -b --python "$1" --python-exit-code 1; }
+blender_run() { "$BLENDER" -b --python-exit-code 1 --python "$1"; }
 
 cmd="${1:-}"
 shift || true
@@ -550,7 +550,7 @@ def render_views(obj, out_prefix: str, size=(640, 480)) -> list[str]:
 - [ ] **Step 5: Создать `art/blender/scripts/ship.py`**
 
 ```python
-"""Корабль игрока «Жук». Запуск: blender -b --python art/blender/scripts/ship.py --python-exit-code 1."""
+"""Корабль игрока «Жук». Запуск: blender -b --python-exit-code 1 --python art/blender/scripts/ship.py."""
 import os
 import sys
 
