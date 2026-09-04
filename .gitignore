@@ -1,0 +1,19 @@
+# .NET и Godot
+**/bin/
+**/obj/
+**/.godot/
+*.import
+*.uid
+TestResults/
+*.user
+
+# Локальное состояние Claude Code
+CLAUDE.local.md
+.claude/settings.local.json
+
+# Blender
+*.blend1
+*.blend2
+
+# SDD workspace (superpowers)
+.superpowers/
