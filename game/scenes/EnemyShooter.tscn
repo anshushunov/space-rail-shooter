@@ -22,6 +22,7 @@ ScoreValue = 60
 BulletScene = ExtResource("2_ebullet")
 
 [node name="Model" type="Node3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
 script = ExtResource("9_slot")
 ModelPath = "res://assets/models/enemy_shooter.glb"
 

@@ -13,8 +13,14 @@ REPO = os.path.abspath(os.path.join(HERE, ".."))
 MODELS = os.path.join(REPO, "game", "assets", "models")
 
 # Оси Blender после импорта: X ширина, Y длина, Z высота.
+ASTEROID = {"tris": (250, 600), "x": (2.0, 3.8), "y": (2.0, 3.8), "z": (2.0, 3.8)}
 LIMITS = {
     "ship": {"tris": (1500, 3000), "x": (3.0, 3.8), "y": (4.0, 4.6), "z": (1.6, 2.2)},
+    "asteroid_a": ASTEROID,
+    "asteroid_b": ASTEROID,
+    "asteroid_c": ASTEROID,
+    "enemy_drone": {"tris": (500, 800), "x": (1.3, 1.9), "y": (1.2, 1.8), "z": (0.35, 0.7)},
+    "enemy_shooter": {"tris": (800, 1200), "x": (1.8, 2.4), "y": (1.8, 2.4), "z": (0.7, 1.2)},
 }
 
 
