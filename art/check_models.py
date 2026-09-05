@@ -19,6 +19,7 @@ LIMITS = {
     "asteroid_a": ASTEROID,
     "asteroid_b": ASTEROID,
     "asteroid_c": ASTEROID,
+    "enemy_drone": {"tris": (500, 800), "x": (1.3, 1.9), "y": (1.2, 1.8), "z": (0.35, 0.7)},
 }
 
 
