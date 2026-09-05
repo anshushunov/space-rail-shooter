@@ -120,8 +120,18 @@ class Builder:
     def bevel(self, faces, offset=0.03, segments=2, cell=None):
         """Фаска по всем рёбрам набора граней: коробки перестают быть картонными.
 
-        Возвращает уцелевшие исходные грани вместе с новыми. `cell` красит
-        результат целиком — у новых граней своей развёртки нет.
+        Возвращает всю область фаски целиком: и поджатые исходные грани, и новые
+        полосы. Сами объекты исходных граней после `bmesh.ops.bevel` не выживают —
+        оператор заменяет их усечёнными копиями, поэтому область собирается заново
+        по вершинам, а не по списку `faces`. Без этого вызывающий код получал одни
+        только полосы фаски, и перекраска вида
+        `paint([f for f in beveled if <предикат>], cell)` молча теряла плоские
+        грани (тёмное брюхо дрона, красная корма двигателя).
+
+        Предполагается, что части модели — раздельные оболочки и вершинами не
+        делятся: грань чужой части не может целиком лежать на вершинах этой.
+
+        `cell` красит результат целиком — у новых граней своей развёртки нет.
         """
         def edge_key(e):
             a, c = (tuple(round(x, 5) for x in v.co) for v in e.verts)
@@ -131,10 +141,12 @@ class Builder:
         # входа, а итерация по set() меняется от запуска к запуску. Порядок граней на
         # выходе всё равно свой у каждого процесса — его канонизирует finish.
         edges = sorted({e for f in faces if f.is_valid for e in f.edges}, key=edge_key)
+        orig_verts = {v for f in faces if f.is_valid for v in f.verts}
         result = bmesh.ops.bevel(self.bm, geom=edges, offset=offset, segments=segments,
                                  affect="EDGES", profile=0.7)
-        out = list(dict.fromkeys([f for f in faces if f.is_valid]
-                                 + [f for f in result["faces"] if f.is_valid]))
+        # Уцелевшие исходные вершины плюс порождённые фаской — вершины всей области.
+        vs = {v for v in orig_verts if v.is_valid} | set(result["verts"])
+        out = [f for f in self.bm.faces if f.is_valid and all(v in vs for v in f.verts)]
         self.bm.normal_update()
         if cell is not None:
             self.paint(out, cell)
