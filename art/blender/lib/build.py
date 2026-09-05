@@ -153,6 +153,15 @@ class Builder:
     def finish(self, name, smooth_angle_deg=30.0):
         # Без канонизации порядок граней в .glb пляшет от запуска к запуску.
         self._reorder_faces(self.bm.verts)
+        # Порядок вершин канонизируется отдельно: `_reorder_faces` пересоздаёт грани,
+        # но сами вершины остаются в порядке создания, а `bmesh.ops.bevel` выдаёт их
+        # в порядке внутренних хеш-таблиц. Из-за этого при одинаковой геометрии
+        # экспорт писал POSITION/NORMAL/индексы в разных перестановках.
+        # `BMElemSeq.sort` принимает только числовой ключ, поэтому ранг по координатам
+        # проставляется в `index`, а сортировка идёт по нему (ключ по умолчанию).
+        for rank, v in enumerate(sorted(self.bm.verts, key=_vert_key)):
+            v.index = rank
+        self.bm.verts.sort()
         mesh = bpy.data.meshes.new(name)
         self.bm.to_mesh(mesh)
         self.bm.free()
