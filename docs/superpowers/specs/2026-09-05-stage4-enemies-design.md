@@ -39,7 +39,7 @@ game/assets/models/*.glb, *_palette.png, *.import
 game/scripts/ModelSlot.cs          # ModelPaths
 game/scenes/Asteroid.tscn          # ModelPaths = три астероида
 game/scenes/EnemyDrone.tscn, EnemyShooter.tscn  # Model повёрнут на 180°
-scripts/art.sh                     # команды asteroid | drone | shooter | all
+scripts/art.sh                     # команды asteroid | drone | shooter | models
 docs/style-guide.md, CLAUDE.md     # команды и правило ориентации врагов
 ```
 
